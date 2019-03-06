@@ -32,6 +32,7 @@ $(function() {
   initCircle();
   initLights();
   window.addEventListener('resize', resize, false);
+  initPaoPao();
   animate();
 });
 
@@ -124,9 +125,7 @@ function initWorld() {
 /** 创建ground **/
 function initGround() {
   const material = new THREE.MeshBasicMaterial({ color: 0x002200, transparent: true, opacity: 0 });
-  const material1 = new THREE.MeshBasicMaterial({ color: 0x002200, transparent: true, opacity: 0.1 });
-  const material2 = new THREE.MeshBasicMaterial({ color: 0x000022, transparent: true, opacity: 0.1 });
-  const material3 = new THREE.MeshBasicMaterial({ color: 0x220000, transparent: true, opacity: 0.1 });
+  const material1 = new THREE.MeshBasicMaterial({ color: 0x000022, transparent: true, opacity: 0.08 });
   const geometry = new THREE.BoxBufferGeometry(threeW, threeH, 1);
 
   const cube = new THREE.Mesh(geometry, material); // 正面
@@ -135,14 +134,14 @@ function initGround() {
   const cube_back = new THREE.Mesh(geometry, material1); // 背面
   cube_back.position.set(0, 0, -10); // 正面与背面距离10
 
-  const cube_left = new THREE.Mesh(geometry, material2); // 左边
+  const cube_left = new THREE.Mesh(geometry, material1); // 左边
   cube_left.rotation.set(0, Math.PI / 2, 0);
   cube_left.position.set(-threeW/2, 0, 0);
 
   const cube_right = cube_left.clone(); // 右边
   cube_right.position.set(threeW/2, 0, 0);
 
-  const cube_top = new THREE.Mesh(geometry, material3); // 上边
+  const cube_top = new THREE.Mesh(geometry, material1); // 上边
   cube_top.rotation.set(Math.PI / 2, 0, 0);
   cube_top.position.set(0, threeH/2, 0);
 
@@ -358,73 +357,6 @@ function initCircle(){
     -Math.cos(Math.PI/180 * 30) * r_d, -Math.sin(Math.PI/180 * 30) * r_d,0,
   ];
 
-/** test **/
-// const g = new THREE.Group();
-// const gg = new THREE.BoxGeometry(sizes[0],sizes[1],sizes[2]);
-// const c1 = new THREE.Mesh(gg, material);
-// const pi = Math.PI/180;
-// c1.position.set(pos[0],pos[1],pos[2]);
-// c1.rotation.set(ros[0]*pi,ros[1]*pi,ros[2]*pi);
-
-// const c2 = c1.clone();
-// c2.position.set(pos[3],pos[4],pos[5]);
-// c2.rotation.set(ros[3]*pi,ros[4]*pi,ros[5]*pi);
-
-// const c3 = c1.clone();
-// c3.position.set(pos[6],pos[7],pos[8]);
-// c3.rotation.set(ros[6]*pi,ros[7]*pi,ros[8]*pi);
-
-// const c4 = c1.clone();
-// c4.position.set(pos[9],pos[10],pos[11]);
-// c4.rotation.set(ros[9]*pi,ros[10]*pi,ros[11]*pi);
-
-// const c5 = c1.clone();
-// c5.position.set(pos[12],pos[13],pos[14]);
-// c5.rotation.set(ros[12]*pi,ros[13]*pi,ros[14]*pi);
-
-// const c6 = c1.clone();
-// c6.position.set(pos[15],pos[16],pos[17]);
-// c6.rotation.set(ros[15]*pi,ros[16]*pi,ros[17]*pi);
-
-// const c7 = c1.clone();
-// c7.position.set(pos[18],pos[19],pos[20]);
-// c7.rotation.set(ros[18]*pi,ros[19]*pi,ros[20]*pi);
-
-// const c8 = c1.clone();
-// c8.position.set(pos[21],pos[22],pos[23]);
-// c8.rotation.set(ros[21]*pi,ros[22]*pi,ros[23]*pi);
-
-// const c9 = c1.clone();
-// c9.position.set(pos[24],pos[25],pos[26]);
-// c9.rotation.set(ros[24]*pi,ros[25]*pi,ros[26]*pi);
-
-// const c10 = c1.clone();
-// c10.position.set(pos[27],pos[28],pos[29]);
-// c10.rotation.set(ros[27]*pi,ros[28]*pi,ros[29]*pi);
-
-// const c11 = c1.clone();
-// c11.position.set(pos[30],pos[31],pos[32]);
-// c11.rotation.set(ros[30]*pi,ros[31]*pi,ros[32]*pi);
-
-// const c12 = c1.clone();
-// c12.position.set(pos[33],pos[34],pos[35]);
-// c12.rotation.set(ros[33]*pi,ros[34]*pi,ros[35]*pi);
-
-// g.add(c1);
-// g.add(c2);
-// g.add(c3);
-// g.add(c4);
-// g.add(c5);
-// g.add(c6);
-// g.add(c7);
-// g.add(c8);
-// g.add(c9);
-// g.add(c10);
-// g.add(c11);
-// g.add(c12);
-
-// scene.add(g);
-
   for(let i=0;i<10;i++){
     let x,y;
     if(i<5){
@@ -457,7 +389,7 @@ function initCircle(){
 function random(min,max){
   return Math.round(Math.random() * (max-min) + min);
 }
-/** 左边按钮被点击 **/
+/** 按钮被点击 **/
 function onBtnClick(event){
   const t = event.data.type;
   const z = Math.random() * 20 - 10;
@@ -478,4 +410,26 @@ function onBtnClick(event){
       body_cic[i].applyImpulse(p, {x: (-300 + far*2)/lock,y: (500 - far*2)/lock,z});
     }
   }
+}
+
+/** 随机刷泡泡 **/
+const pao = document.querySelectorAll(".back-box .pao");
+pao.forEach((item)=>{
+  item.addEventListener("animationend", onPaoAnimationend, false)
+})
+function initPaoPao(){
+  setInterval(()=>{
+    const p = pao[random(0,2)];
+    if(p.getAttribute('isTrans')!=='t'){
+      
+      p.style.left = `${random(10, boxW-10)}px`;
+      p.setAttribute('isTrans', 't');
+      p.classList.add('pao-move');
+    }
+  },3000)
+}
+
+function onPaoAnimationend(e){
+  e.target.setAttribute('isTrans', 'f');
+  e.target.classList.remove('pao-move');
 }
