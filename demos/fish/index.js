@@ -5,12 +5,11 @@ let camera; // 相机
 let renderer; // 渲染器
 let stats; // 帧率辅助器
 
-let BodyGround = []; // 地面对象
-let BodyPin = []; // 针头对象
 let cic = [];
 let body_cic = [];
 let boxW,boxH; // 容器真实宽高，px
 let threeW, threeH; // three中的盒子宽高
+
 $(function() {
   FastClick.attach(document.body);
 
@@ -28,7 +27,8 @@ $(function() {
   initWorld();
   initGround();
   initPins();
-  test();
+  initDecoration();
+  // test();
   initCircle();
   initLights();
   window.addEventListener('resize', resize, false);
@@ -39,7 +39,7 @@ $(function() {
 function init3boss() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(53, boxW / boxH, 0.1, 1000);
-  renderer = new THREE.WebGLRenderer();
+  renderer = new THREE.WebGLRenderer({alpha: true});
 
   camera.position.set(0, 0, 50);
   camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -50,6 +50,7 @@ function init3boss() {
 
   renderer.setSize(boxW, boxH, true);
   renderer.gammaOutput = true; // 所有纹理和颜色需要乘以gamma输出，颜色会亮丽许多
+  renderer.setClearColor(0x000000,0);
   container.appendChild(renderer.domElement);
 }
 
@@ -87,15 +88,22 @@ function animate() {
 }
 
 /** 渲染内容 **/
+const clock = new THREE.Clock();
+let timeOld = Date.now();
+let timeNow = timeOld;
 function render() {
   if (world == null) return;
 
   world.step(); // 更新world
-  sphere.position.copy(sphere_body.getPosition());
-  sphere.quaternion.copy(sphere_body.getQuaternion());
   for(let i=0;i < body_cic.length;i++){
     cic[i].position.copy(body_cic[i].getPosition());
     cic[i].quaternion.copy(body_cic[i].getQuaternion());
+  }
+
+  timeNow = Date.now();
+  if(timeNow - timeOld > 5000){
+    checkLock();
+    timeOld = timeNow;
   }
   renderer.render(scene, camera);
 }
@@ -116,9 +124,9 @@ function initWorld() {
 /** 创建ground **/
 function initGround() {
   const material = new THREE.MeshBasicMaterial({ color: 0x002200, transparent: true, opacity: 0 });
-  const material1 = new THREE.MeshBasicMaterial({ color: 0x002200, transparent: true, opacity: 1 });
-  const material2 = new THREE.MeshBasicMaterial({ color: 0x000022, transparent: true, opacity: 1 });
-  const material3 = new THREE.MeshBasicMaterial({ color: 0x220000, transparent: true, opacity: 1 });
+  const material1 = new THREE.MeshBasicMaterial({ color: 0x002200, transparent: true, opacity: 0.1 });
+  const material2 = new THREE.MeshBasicMaterial({ color: 0x000022, transparent: true, opacity: 0.1 });
+  const material3 = new THREE.MeshBasicMaterial({ color: 0x220000, transparent: true, opacity: 0.1 });
   const geometry = new THREE.BoxBufferGeometry(threeW, threeH, 1);
 
   const cube = new THREE.Mesh(geometry, material); // 正面
@@ -147,12 +155,24 @@ function initGround() {
   scene.add(cube_top);
   scene.add(cube_bottom);
 
-  world.add({ size: [threeW, threeH, 2], pos: [0, 0, 0.1], world }); // 正面
-  world.add({ size: [threeW, threeH, 2], pos: [0, 0, -10], world }); // 背面
-  world.add({ size: [threeW, threeH, 2], pos: [-threeW/2, 0, 0], rot: [0, 90, 0], world }); // 左边
-  world.add({ size: [threeW, threeH, 2], pos: [threeW/2, 0, 0], rot: [0, 90, 0], world }); // 右边
-  world.add({ size: [threeW, threeH, 2], pos: [0, threeH/2, 0], rot: [90, 0, 0], world }); // 上边
-  world.add({ size: [threeW, threeH, 2], pos: [0, -threeH/2, 0], rot: [90, 0, 0], world }); // 下边
+  world.add({ size: [threeW, threeH, 2], pos: [0, 0, 0.1],friction: 0, world }); // 正面
+  world.add({ size: [threeW, threeH, 2], pos: [0, 0, -10], friction: 0,world }); // 背面
+  world.add({ size: [threeW, threeH, 2], pos: [-threeW/2, 0, 0], rot: [0, 90, 0],friction: 0, world }); // 左边
+  world.add({ size: [threeW, threeH, 2], pos: [threeW/2, 0, 0], rot: [0, 90, 0], friction: 0,world }); // 右边
+  world.add({ size: [threeW, threeH, 2], pos: [0, threeH/2, 0], rot: [90, 0, 0], friction: 0,world }); // 上边
+  world.add({ size: [threeW, threeH, 2], pos: [0, -threeH/2, 0], rot: [90, 0, 0], friction: 0,world }); // 下边
+}
+
+/** 创建一些装饰物 **/
+function initDecoration(){
+  const geometry = new THREE.CylinderBufferGeometry(2, 2, 1, 12);
+  const material = new THREE.MeshBasicMaterial({color: 0xff0000});
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(-threeW/2 + 10,-threeH/2+0.1, -4);
+  const mesh2 = mesh.clone();
+  mesh2.position.set(threeW/2 - 10, -threeH/2+0.1, -4);
+  scene.add(mesh);
+  scene.add(mesh2);
 }
 
 /** 测试小球 **/
@@ -171,7 +191,7 @@ function test() {
     rot: [0, 0, 0], // start rotation in degree
     move: true, // dynamic or statique
     density: 1,
-    friction: 0.2,
+    friction: 1,
     restitution: 0.2,
     belongsTo: 1, // The bits of the collision groups to which the shape belongs.
     collidesWith: 0xffffffff, // The bits of the collision groups with which the shape collides.
@@ -185,24 +205,37 @@ function test() {
 function initLights(){
   scene.add(new THREE.AmbientLight(0x222222));
   const l2 = new THREE.DirectionalLight(0xcccccc, 1);
-  l2.position.set(0,-100,0);
+  l2.position.set(0,5,10);
   scene.add(l2);
+}
+
+/** 判断所有小圈套住的情况 **/
+function checkLock(){
+  cic.forEach((item,index)=>{
+    const p = item.position;
+    if((p.x >= -threeW / 2 / 2 - 3.4 && p.x <= -threeW / 2 / 2 + 3.4 || p.x >= threeW / 2 / 2 - 3.4 && p.x <= threeW / 2 / 2 + 3.4) && p.z <= -4 + 3.4 && p.z>= -4 -3.4 && p.y >= -20 && p.y <= 4){ // 3.4是小圆环圆心到内环表面的距离
+      // console.log('isLock:', item, index);
+      item.isLock = true;
+    } else {
+      item.isLock = false;
+    }
+  })
 }
 
 /** 初始化所有的pin **/
 function initPins() {
   const size = [2, 2, 5, 3.6, 12, 12, 1, 20, 1];
   const pos = [
-    ((-boxW / boxH) * 100) / 2 / 2, -20, -7.5,
-    ((-boxW / boxH) * 100) / 2 / 2, -20, -4,
-    ((-boxW / boxH) * 100) / 2 / 2, -10, -4
+    -threeW / 2 / 2, -20, -7.5,
+    -threeW / 2 / 2, -20, -4,
+    -threeW / 2 / 2, -8, -4
   ];
 
   const box = new THREE.BoxGeometry(size[0], size[1], size[2]);
   const box2 = new THREE.SphereBufferGeometry(size[3], size[4], size[5]);
   const box3 = new THREE.ConeBufferGeometry(1.4, 24, 24, 24);
 
-  const m = new THREE.MeshBasicMaterial({ color: 0xaaaaaa });
+  const m = new THREE.MeshPhongMaterial({ color: 0xaaaaff });
 
   const c = new THREE.Mesh(box, m);
   const c2 = new THREE.Mesh(box2, m);
@@ -270,9 +303,10 @@ function initPins() {
 function initCircle(){
   const geometry = new THREE.TorusBufferGeometry( 4, 0.6, 8, 32 );
   const material = [
-    new THREE.MeshLambertMaterial( { color: 0xeeee00 } ),
-    new THREE.MeshLambertMaterial( { color: 0x6688cc } ),
-    new THREE.MeshLambertMaterial( { color: 0xcc8866 } )
+    new THREE.MeshToonMaterial( { color: 0xdd0000 } ),
+    new THREE.MeshToonMaterial( { color: 0x2244dd } ),
+    new THREE.MeshToonMaterial( { color: 0xdddd00 } ),
+    new THREE.MeshToonMaterial( { color: 0x00dd00 } )
   ]
 
   const types = ['box','box','box','box','box','box','box','box','box','box','box','box'];
@@ -292,18 +326,18 @@ function initCircle(){
   ];
   
   const ros = [
-    0,0,0,
-    0,0, -30,
-    0,0,-60,
-    0,0,-90,
-    0,0,60,
-    0,0,30,
-    0,0,0,
-    0,0, -30 ,
-    0,0,-60,
-    0,0, 90,
-    0,0,60,
-    0,0,30,
+    30,0,0,
+    60,0, -30,
+    90,0,-60,
+    120,0,-90,
+    150,0,60,
+    180,0,30,
+    210,0,0,
+    240,0, -30 ,
+    270,0,-60,
+    300,0, 90,
+    330,0,60,
+    360,0,30,
   ];
 
   const l = 3.5; // 圆心到顶点距离
@@ -404,32 +438,44 @@ function initCircle(){
       type: types,
       size: sizes,
       posShape: pos,
-      pos: [x,y,-5],
+      pos: [x,y,-4],
       rot: ros,
+      friction: 0.4,
       move:true ,
+
       name: `cic${i}`
     });
 
-    const c = new THREE.Mesh( geometry, material[i%3] );
+    const c = new THREE.Mesh( geometry, material[random(0,3)] );
     cic.push(c);
     body_cic.push(wc);
     scene.add(c);
   }
 }
 
+/** 取范围随机数 **/
+function random(min,max){
+  return Math.round(Math.random() * (max-min) + min);
+}
 /** 左边按钮被点击 **/
 function onBtnClick(event){
   const t = event.data.type;
-  const center = new THREE.Vector3(-threeW/2,-threeH/2,0);
-  let m, force;
-
+  const z = Math.random() * 20 - 10;
   for(let i=0;i<body_cic.length;i++){
     const p = cic[i].position;
+    const lock = cic[i].isLock ? 5 : 1;
+    
     // const power = {x: pos.x - threeW/2 + 10}
     if(t === 'left'){
-      body_cic[i].applyImpulse(p, {x: 300,y:1000,z:-100});
+      const s_x = Math.abs(p.x - (- threeW/2));
+      const s_y = Math.abs(p.y - (- threeH/2));
+      const far = Math.sqrt(s_x**2 + s_y**2);
+      body_cic[i].applyImpulse(p, {x: (300 - far*2)/lock,y: (500 - far*2)/lock,z});
     } else {
-      body_cic[i].applyImpulse(p, {x: -300,y:1000,z:-100});
+      const s_x = Math.abs(p.x - ( threeW/2));
+      const s_y = Math.abs(p.y - ( threeH/2));
+      const far = Math.sqrt(s_x**2 + s_y**2);
+      body_cic[i].applyImpulse(p, {x: (-300 + far*2)/lock,y: (500 - far*2)/lock,z});
     }
   }
 }
