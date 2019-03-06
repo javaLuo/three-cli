@@ -164,14 +164,18 @@ function initGround() {
 
 /** 创建一些装饰物 **/
 function initDecoration(){
-  const geometry = new THREE.CylinderBufferGeometry(2, 2, 1, 12);
-  const material = new THREE.MeshBasicMaterial({color: 0xff0000});
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(-threeW/2 + 10,-threeH/2+0.1, -4);
-  const mesh2 = mesh.clone();
-  mesh2.position.set(threeW/2 - 10, -threeH/2+0.1, -4);
-  scene.add(mesh);
-  scene.add(mesh2);
+  new THREE.TextureLoader().load( './assets/imgs/hole.png', function(texture){
+    const geometry = new THREE.CircleBufferGeometry(2, 12);
+    const material = new THREE.MeshBasicMaterial({color: 0xffffff,map:texture,transparent:true});
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(-threeW/2 + 10,1-threeH/2, -4);
+   // mesh.rotation.set(Math.PI/180*35,0,0);
+    const mesh2 = mesh.clone();
+    mesh2.position.set(threeW/2 - 10, 1-threeH/2, -4);
+    scene.add(mesh);
+    scene.add(mesh2);
+  });
+  
 }
 
 /** 测试小球 **/
