@@ -1,5 +1,6 @@
 *{
   user-select: none;
+  -webkit-user-select: none;
 }
 div{
   box-sizing: border-box;
@@ -60,6 +61,24 @@ div{
        transform: translateY(0);
      }
    }
+   .btn2{
+     margin-top: 80px;
+    width: 80px;
+    height: 32px;
+    border:solid 2px #ccc;
+    border-radius: 20px;
+    border: solid 2px #fff;
+    transition: all 128ms;
+    box-shadow: 0 5px 10px #222;
+    outline: none;
+    background-color: #22cc22;
+    transform: translateY(-3px);
+    color:#f0f0f0;
+    &:active{
+      box-shadow: 0 3px 4px #888;
+      transform: translateY(0);
+    }
+   }
  }
 }
 
@@ -87,15 +106,100 @@ div{
     position: absolute;
     bottom: -20px;
     padding: 10px;
-    background-color: #ccc;
+    width: 39px;
+    height: 100px;
+    background-image: url(./assets/imgs/pao.png);
     opacity: 0;
     &.pao-move{
       animation-name: pao-animation;
-      animation-duration: 5s;
+      animation-duration: 3s;
       animation-timing-function: linear;
       -webkit-animation-name: pao-animation;
-      -webkit-animation-duration: 5s;
+      -webkit-animation-duration: 3s;
       -webkit-animation-timing-function: linear;
     }
+  }
+}
+.first-info{
+  position: absolute;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateY(10px);
+  padding: 20px;
+  z-index: 12;
+  top: 20px;
+  width: calc(100% - 40px);
+  left: 20px;
+  border-radius: 6px;
+  text-align: justify;
+  background-color: rgba(33,44,200,.5);
+  color: #fff;
+  transition: all 1000ms;
+  &.show{
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.success{
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  top: 0;
+  left:0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 12;
+  transition: opacity 300ms;
+  &.show{
+    opacity: 1;
+    pointer-events: auto;
+    .info{
+      transform: scale(1,1);
+    }
+    .new-game{
+      bottom: 20px;
+    }
+  }
+  .success-back{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .info{
+    position: absolute;
+    transform: scale(0,0);
+    transition: all 500ms;
+    top: 20px;
+    left: 0;
+    width: 100%;
+    color: #fff;
+    text-align: center;
+    text-shadow: 0 0 10px #4566b4;
+    .title{
+      font-size: 18px;
+      font-weight: bold;
+    }
+  }
+  .new-game{
+   position: absolute;
+   transition: bottom 500ms;
+   left: 50%;
+   bottom: -20px;
+   padding: 5px 20px;
+   height: 32px;
+   border:solid 2px #ccc;
+   border-radius: 20px;
+   border: solid 2px #fff;
+   transition: all 128ms;
+   box-shadow: 0 5px 10px #222;
+   outline: none;
+   background-color: #22cc22;
+   transform: translateY(-3px) translateX(-50%);
+   color:#f0f0f0;
+   &:active{
+     box-shadow: 0 3px 4px #888;
+     transform: translateY(0) translateX(-50%);
+   }
   }
 }

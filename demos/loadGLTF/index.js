@@ -3,6 +3,7 @@ $(function() {
   init3boss();
   initHelper();
   initOrbitControl();
+  initLight();
   loadGLTF();
   window.addEventListener('resize', resize, false);
   animate();
@@ -40,6 +41,13 @@ function initHelper() {
   // scene.add(new THREE.CameraHelper(camera)); // 相机视锥体
 }
 
+function initLight(){
+  scene.add(new THREE.AmbientLight( 0x404040 ));
+  var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+  directionalLight.position.set(10,10,10);
+  scene.add(directionalLight);
+}
+
 /** 初始化镜头控制器 **/
 function initOrbitControl() {
   cameraControls = new THREE.OrbitControls(camera, container);
@@ -68,10 +76,11 @@ function render() {
 /** ==== 加载GLTF模型 ==== **/
 function loadGLTF() {
   const loader = new THREE.GLTFLoader();
-  loader.load('./model/scene.gltf', function(gltf) {
+  loader.load('./model/test.gltf', function(gltf) {
     console.log('加载完毕：', gltf);
+    gltf.scene.scale.set(0.1,0.1,0.1);
     scene.add(gltf.scene);
-    initAnimations(gltf); // 处理动画
+    // initAnimations(gltf); // 处理动画
   });
 }
 
